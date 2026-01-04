@@ -11,26 +11,38 @@ export default function Deposit(){
   const [deposits,setDeposits] = useState([])
   const [packages,setPackages]=useState([])
 
-  useEffect(()=>{ async function l(){ api.setToken(localStorage.getItem('de_token')); const r=await api.getMyDeposits(); if(r.deposits) setDeposits(r.deposits) } l() },[])
+  useEffect(()=>{
+    async function l(){
+      try{
+        api.setToken(localStorage.getItem('de_token'))
+        const r=await api.getMyDeposits(); if(r.deposits) setDeposits(r.deposits)
+      }catch(e){ console.error('Failed to load deposits', e) }
+    }
+    l()
+  },[])
 
   useEffect(()=>{
     async function loadPkgs(){
-      const r = await api.getPackages()
-      if(r.packages) setPackages(r.packages)
-      // preselect from query param
-      const params = new URLSearchParams(window.location.search)
-      const pkg = params.get('package')
-      if(pkg) setSelectedPackage(pkg)
+      try{
+        const r = await api.getPackages()
+        if(r.packages) setPackages(r.packages)
+        // preselect from query param
+        const params = new URLSearchParams(window.location.search)
+        const pkg = params.get('package')
+        if(pkg) setSelectedPackage(pkg)
+      }catch(e){ console.error('Failed to load packages for deposit', e) }
     }
     loadPkgs()
   },[])
 
   async function submit(e){
     e.preventDefault()
-  const r = await api.submitDeposit({ accountHolder, transactionId, amount, method, screenshotFile: file })
-    if(r.error) return alert(r.error)
-    alert('Deposit submitted — pending admin approval')
-    const r2 = await api.getMyDeposits(); if(r2.deposits) setDeposits(r2.deposits)
+    try{
+      const r = await api.submitDeposit({ accountHolder, transactionId, amount, method, packageId: selectedPackage, screenshotFile: file })
+      if(r.error) return alert(r.error)
+      alert('Deposit submitted — pending admin approval')
+      const r2 = await api.getMyDeposits(); if(r2.deposits) setDeposits(r2.deposits)
+    }catch(e){ console.error('Submit deposit failed', e); alert('Server error') }
   }
 
   return (

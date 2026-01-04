@@ -7,7 +7,7 @@ export default function Landing(){
       <div className="card" style={{padding:24,marginBottom:16}}>
         <div className="spaced flex">
           <div>
-            <h1>DailyEarn Pro</h1>
+            <h1>Earneasy</h1>
             <p className="muted small">Earn daily by completing simple tasks. Purchase investment packages to increase earnings and unlock more tasks.</p>
             <div style={{marginTop:12}}>
               <Link to="/auth" className="btn">Get Started</Link>

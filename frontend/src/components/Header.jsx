@@ -18,8 +18,8 @@ export default function Header(){
     <header className="container header">
       <div className="brand">
         <Link to="/" style={{display:'flex',alignItems:'center',gap:12}}>
-          <div className="logo">DE</div>
-          <div className="title">DailyEarn Pro</div>
+          <div className="logo">EE</div>
+          <div className="title">Earneasy</div>
         </Link>
       </div>
 
@@ -28,7 +28,7 @@ export default function Header(){
         <Link to="/tasks">Tasks</Link>
         <Link to="/wallet">Wallet</Link>
   <Link to="/referrals">Referrals</Link>
-  <Link to="/deposit" className="">Deposit</Link>
+  <a href="#" onClick={async (e)=>{ e.preventDefault(); try{ const res = await fetch((import.meta.env.VITE_API_URL||'http://localhost:4000') + '/api/health'); if(!res.ok) throw new Error('down'); window.location.href = '/deposit' }catch(err){ alert('Backend appears down or unreachable — deposit page is unavailable right now.') } }} className="">Deposit</a>
         {auth ? (
           <>
             <Link to="/dashboard" className="">Dashboard</Link>
@@ -63,6 +63,7 @@ export default function Header(){
               <Link to="/tasks" onClick={()=>setOpen(false)}>Tasks</Link>
               <Link to="/wallet" onClick={()=>setOpen(false)}>Wallet</Link>
               <Link to="/referrals" onClick={()=>setOpen(false)}>Referrals</Link>
+              <a href="#" onClick={async (e)=>{ e.preventDefault(); setOpen(false); try{ const res = await fetch((import.meta.env.VITE_API_URL||'http://localhost:4000') + '/api/health'); if(!res.ok) throw new Error('down'); window.location.href = '/deposit' }catch(err){ alert('Backend appears down or unreachable — deposit page is unavailable right now.') } }}>Deposit</a>
               {auth ? (
                 <>
                   <Link to="/dashboard" onClick={()=>setOpen(false)}>Dashboard</Link>

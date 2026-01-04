@@ -13,10 +13,14 @@ export default function Tasks(){
 
   useEffect(()=>{
     async function load(){
-      const token = localStorage.getItem('de_token')
-      if(token){ api.setToken(token); const meRes = await api.me(); if(meRes.user) setUser(meRes.user) }
-      const tRes = await api.getTasks()
-      if(tRes.tasks) setTasks(tRes.tasks)
+      try{
+        const token = localStorage.getItem('de_token')
+        if(token){ api.setToken(token); const meRes = await api.me(); if(meRes.user) setUser(meRes.user) }
+        const tRes = await api.getTasks()
+        if(tRes.tasks) setTasks(tRes.tasks)
+      }catch(e){
+        console.error('Failed to load tasks or user', e)
+      }
     }
     load()
   },[])

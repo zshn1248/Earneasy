@@ -1,6 +1,6 @@
 // Simple mock API for demo purposes. Uses localStorage to persist demo state.
 
-const STORAGE_KEY = 'dailyearn_demo'
+const STORAGE_KEY = 'earneasy_demo'
 
 const defaultState = {
   users: [],

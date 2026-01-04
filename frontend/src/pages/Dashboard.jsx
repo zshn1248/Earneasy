@@ -8,11 +8,15 @@ export default function Dashboard(){
 
   useEffect(()=>{
     async function load(){
-      const token = localStorage.getItem('de_token')
-      if(!token) return
-      api.setToken(token)
-      const r = await api.me()
-      if(r.user) setUser(r.user)
+      try{
+        const token = localStorage.getItem('de_token')
+        if(!token) return
+        api.setToken(token)
+        const r = await api.me()
+        if(r.user) setUser(r.user)
+      }catch(e){
+        console.error('Failed to load user in dashboard', e)
+      }
     }
     load()
   },[])

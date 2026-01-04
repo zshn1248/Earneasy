@@ -1,13 +1,13 @@
 const LOCALES = {
   en: {
-    appName: 'DailyEarn Pro',
+    appName: 'Earneasy',
     getStarted: 'Get Started',
     viewPackages: 'View Packages',
     signIn: 'Sign in',
     signUp: 'Sign up'
   },
   ur: {
-    appName: 'ڈیلی ارن پرو',
+    appName: 'ارن ایزی',
     getStarted: 'شروع کریں',
     viewPackages: 'پیکیجز دیکھیں',
     signIn: 'سائن ان',

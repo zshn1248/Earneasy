@@ -9,13 +9,17 @@ export default function Wallet(){
 
   useEffect(()=>{
     async function load(){
-      const token = localStorage.getItem('de_token')
-      if(!token) return
-      api.setToken(token)
-      const meRes = await api.me()
-      if(meRes.user) setUser(meRes.user)
-      const txRes = await api.getTransactions()
-      if(txRes.transactions) setTxs(txRes.transactions)
+      try{
+        const token = localStorage.getItem('de_token')
+        if(!token) return
+        api.setToken(token)
+        const meRes = await api.me()
+        if(meRes.user) setUser(meRes.user)
+        const txRes = await api.getTransactions()
+        if(txRes.transactions) setTxs(txRes.transactions)
+      }catch(e){
+        console.error('Failed to load wallet data', e)
+      }
     }
     load()
   },[])
@@ -24,14 +28,19 @@ export default function Wallet(){
     if(!user) return alert('Please sign in')
     const amount = parseFloat(withdrawAmount)
     if(!amount || amount < 10) return alert('Minimum withdrawal is $10')
-    api.setToken(localStorage.getItem('de_token'))
-    const r = await api.withdraw({ amount, method: 'bank', account: withdrawAccount })
-    if(r.error) return alert(r.error)
-    alert('Withdrawal requested — pending')
-    const meRes = await api.me()
-    if(meRes.user) setUser(meRes.user)
-    const txRes = await api.getTransactions()
-    if(txRes.transactions) setTxs(txRes.transactions)
+    try{
+      api.setToken(localStorage.getItem('de_token'))
+      const r = await api.withdraw({ amount, method: 'bank', account: withdrawAccount })
+      if(r.error) return alert(r.error)
+      alert('Withdrawal requested — pending')
+      const meRes = await api.me()
+      if(meRes.user) setUser(meRes.user)
+      const txRes = await api.getTransactions()
+      if(txRes.transactions) setTxs(txRes.transactions)
+    }catch(e){
+      console.error('Withdraw request failed', e)
+      alert('Server error')
+    }
   }
 
   return (

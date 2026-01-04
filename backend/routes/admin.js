@@ -14,8 +14,10 @@ function allowAdminOrSecret(handler){
         // bypass normal auth
         return handler(req,res)
       }
-      // otherwise require usual admin flow
-      return authenticate(req,res, async ()=> requireAdmin(req,res, handler))
+      // otherwise run authenticate -> requireAdmin -> handler
+      return authenticate(req,res, () => {
+        return requireAdmin(req,res, () => handler(req,res))
+      })
     }catch(e){ console.error(e); return res.status(500).json({ error:'server' }) }
   }
 }
@@ -31,6 +33,27 @@ router.get('/blocked', allowAdminOrSecret(async (req,res)=>{
   res.json({ blocked: list })
 }))
 
+// whitelist management
+router.get('/whitelist', allowAdminOrSecret(async (req,res)=>{
+  const list = await models.WhitelistedIP.findAll({ order:[['addedAt','DESC']] })
+  res.json({ whitelist: list })
+}))
+
+router.post('/whitelist', allowAdminOrSecret(async (req,res)=>{
+  const { ip, note } = req.body || {}
+  if(!ip) return res.status(400).json({ error: 'Missing ip' })
+  await models.WhitelistedIP.upsert({ ip, note })
+  res.json({ ok:true })
+}))
+
+router.post('/whitelist/:ip/remove', allowAdminOrSecret(async (req,res)=>{
+  const ip = req.params.ip
+  const w = await models.WhitelistedIP.findByPk(ip)
+  if(!w) return res.status(404).json({ error: 'Not found' })
+  await w.destroy()
+  res.json({ ok:true })
+}))
+
 router.post('/blocked/:ip/unblock', allowAdminOrSecret(async (req,res)=>{
   const ip = req.params.ip
   const b = await models.BlockedIP.findByPk(ip)
@@ -40,7 +63,7 @@ router.post('/blocked/:ip/unblock', allowAdminOrSecret(async (req,res)=>{
 }))
 
 // Approve deposit
-router.post('/deposits/:id/approve', authenticate, requireAdmin, async (req,res)=>{
+router.post('/deposits/:id/approve', allowAdminOrSecret(async (req,res)=>{
   const id = req.params.id
   const dep = await models.Deposit.findByPk(id)
   if(!dep) return res.status(404).json({ error:'Not found' })
@@ -53,32 +76,32 @@ router.post('/deposits/:id/approve', authenticate, requireAdmin, async (req,res)
   await user.save()
   await models.Transaction.create({ id: 't'+Date.now(), userId: user.id, type:'deposit', amount: dep.amount, meta: { depositId: dep.id } })
   res.json({ ok:true })
-})
+}))
 
 // Reject deposit
-router.post('/deposits/:id/reject', authenticate, requireAdmin, async (req,res)=>{
+router.post('/deposits/:id/reject', allowAdminOrSecret(async (req,res)=>{
   const id = req.params.id
   const dep = await models.Deposit.findByPk(id)
   if(!dep) return res.status(404).json({ error:'Not found' })
   dep.status = 'rejected'
   await dep.save()
   res.json({ ok:true })
-})
+}))
 
 // list users
-router.get('/users', authenticate, requireAdmin, async (req,res)=>{
+router.get('/users', allowAdminOrSecret(async (req,res)=>{
   const users = await models.User.findAll({ order:[['createdAt','DESC']] })
   res.json({ users })
-})
+}))
 
 // list all transactions
-router.get('/transactions', authenticate, requireAdmin, async (req,res)=>{
+router.get('/transactions', allowAdminOrSecret(async (req,res)=>{
   const txs = await models.Transaction.findAll({ order:[['createdAt','DESC']] })
   res.json({ transactions: txs })
-})
+}))
 
 // approve withdraw
-router.post('/withdraws/:id/approve', authenticate, requireAdmin, async (req,res)=>{
+router.post('/withdraws/:id/approve', allowAdminOrSecret(async (req,res)=>{
   const id = req.params.id
   const t = await models.Transaction.findByPk(id)
   if(!t) return res.status(404).json({ error:'Not found' })
@@ -86,10 +109,10 @@ router.post('/withdraws/:id/approve', authenticate, requireAdmin, async (req,res
   t.status = 'approved'
   await t.save()
   res.json({ ok:true })
-})
+}))
 
 // reject withdraw => refund
-router.post('/withdraws/:id/reject', authenticate, requireAdmin, async (req,res)=>{
+router.post('/withdraws/:id/reject', allowAdminOrSecret(async (req,res)=>{
   const id = req.params.id
   const t = await models.Transaction.findByPk(id)
   if(!t) return res.status(404).json({ error:'Not found' })
@@ -101,6 +124,6 @@ router.post('/withdraws/:id/reject', authenticate, requireAdmin, async (req,res)
   t.status = 'rejected'
   await t.save()
   res.json({ ok:true })
-})
+}))
 
 module.exports = router

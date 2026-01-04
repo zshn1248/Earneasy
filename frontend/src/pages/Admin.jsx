@@ -12,35 +12,45 @@ export default function Admin(){
 
   useEffect(()=>{
     async function load(){
-      api.setToken(localStorage.getItem('de_token'))
-      const r = await api.adminGetDeposits()
-      if(r.deposits) setDeposits(r.deposits)
-      const b = await api.adminGetBlocked()
-      if(b.blocked) setBlocked(b.blocked)
-      const u = await api.adminGetUsers()
-      if(u.users) setUsers(u.users)
-      const t = await api.adminGetTransactions()
-      if(t.transactions) setTransactions(t.transactions)
+      try{
+        api.setToken(localStorage.getItem('de_token'))
+        const r = await api.adminGetDeposits()
+        if(r.deposits) setDeposits(r.deposits)
+        const b = await api.adminGetBlocked()
+        if(b.blocked) setBlocked(b.blocked)
+        const u = await api.adminGetUsers()
+        if(u.users) setUsers(u.users)
+        const t = await api.adminGetTransactions()
+        if(t.transactions) setTransactions(t.transactions)
+      }catch(e){
+        console.error('Failed to load admin data', e)
+      }
     }
     load()
   },[])
 
   async function approve(id){
-    await api.adminApproveDeposit(id)
-    const r = await api.adminGetDeposits()
-    if(r.deposits) setDeposits(r.deposits)
+    try{
+      await api.adminApproveDeposit(id)
+      const r = await api.adminGetDeposits()
+      if(r.deposits) setDeposits(r.deposits)
+    }catch(e){ console.error('Approve failed', e) }
   }
 
   async function reject(id){
-    await api.adminRejectDeposit(id)
-    const r = await api.adminGetDeposits()
-    if(r.deposits) setDeposits(r.deposits)
+    try{
+      await api.adminRejectDeposit(id)
+      const r = await api.adminGetDeposits()
+      if(r.deposits) setDeposits(r.deposits)
+    }catch(e){ console.error('Reject failed', e) }
   }
 
   async function unblock(ip){
-    await api.adminUnblock(ip)
-    const b = await api.adminGetBlocked()
-    if(b.blocked) setBlocked(b.blocked)
+    try{
+      await api.adminUnblock(ip)
+      const b = await api.adminGetBlocked()
+      if(b.blocked) setBlocked(b.blocked)
+    }catch(e){ console.error('Unblock failed', e) }
   }
 
   return (

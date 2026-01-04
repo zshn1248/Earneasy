@@ -45,6 +45,7 @@ const Deposit = sequelize.define('Deposit', {
   transactionId: DataTypes.STRING,
   amount: DataTypes.FLOAT,
   method: DataTypes.STRING,
+  packageId: DataTypes.STRING,
   screenshot: DataTypes.STRING,
   status: { type: DataTypes.STRING, defaultValue: 'pending' },
   submitIp: DataTypes.STRING
@@ -54,6 +55,12 @@ const BlockedIP = sequelize.define('BlockedIP', {
   ip: { type: DataTypes.STRING, primaryKey: true },
   reason: DataTypes.STRING,
   blockedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
+})
+
+const WhitelistedIP = sequelize.define('WhitelistedIP', {
+  ip: { type: DataTypes.STRING, primaryKey: true },
+  note: DataTypes.STRING,
+  addedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 })
 
 const Task = sequelize.define('Task', {
@@ -100,4 +107,4 @@ async function seed(){
   }
 }
 
-module.exports = { sequelize, models: { User, Package, Transaction, Deposit, Task, BlockedIP }, seed }
+module.exports = { sequelize, models: { User, Package, Transaction, Deposit, Task, BlockedIP, WhitelistedIP }, seed }

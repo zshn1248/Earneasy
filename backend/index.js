@@ -28,7 +28,12 @@ app.use('/uploads', express.static(uploadDir))
 
 // IP block middleware (honeypot)
 const { ipBlock } = require('./middleware/ipBlock')
-app.use(ipBlock)
+// Honeypot middleware can interfere with testing. Allow disabling via env var DISABLE_HONEYPOT=1
+if(process.env.DISABLE_HONEYPOT === '1'){
+  console.log('Honeypot middleware disabled via DISABLE_HONEYPOT=1')
+}else{
+  app.use(ipBlock)
+}
 
 // routes
 app.use('/api/auth', authRoutes)
@@ -41,7 +46,7 @@ app.use('/api/admin', adminRoutes)
 const { authenticate } = require('./middleware/auth')
 app.post('/api/deposits', authenticate, upload.single('screenshot'), async (req, res) => {
   try{
-    const { accountHolder, transactionId, amount, method } = req.body
+  const { accountHolder, transactionId, amount, method, packageId } = req.body
     const submitIp = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress || ''
     // honeypot: if there is existing deposit from same IP for a different user, block the IP and reject
     const other = await models.Deposit.findOne({ where: { submitIp } })
@@ -57,6 +62,7 @@ app.post('/api/deposits', authenticate, upload.single('screenshot'), async (req,
       transactionId,
       amount: parseFloat(amount),
       method,
+      packageId: packageId || null,
       screenshot: req.file ? '/uploads/' + req.file.filename : null,
       status: 'pending',
       submitIp
@@ -80,9 +86,36 @@ app.get('/api/health', (req,res)=> res.json({ ok:true }))
 
 const PORT = process.env.PORT || 4000
 async function start(){
-  // use alter in dev to update DB schema when models change
-  await sequelize.sync({ alter: true })
+  // try to use alter in dev to update DB schema when models change
+  try{
+    await sequelize.sync({ alter: true })
+  }catch(err){
+    console.error('Sequelize sync with { alter: true } failed:', err && err.message || err)
+    console.error('Falling back to sequelize.sync() (no alter).')
+    console.error('If you need to apply model schema changes, consider removing the SQLite file at backend/data.sqlite to recreate the schema (make a backup first).')
+    try{
+      await sequelize.sync()
+    }catch(err2){
+      console.error('Fallback sequelize.sync() also failed:', err2)
+      console.error('Cannot start server. To reset the database, remove backend/data.sqlite and restart. Exiting.')
+      process.exit(1)
+    }
+  }
+
   await seed()
+  // ensure new columns exist on older DB files (e.g. packageId added later)
+  try{
+    const qi = sequelize.getQueryInterface()
+    const DataTypes = require('sequelize').DataTypes
+    const desc = await qi.describeTable('Deposits').catch(()=>null)
+    if(desc && !desc.packageId){
+      console.log('Adding missing column `packageId` to Deposits table')
+      await qi.addColumn('Deposits','packageId',{ type: DataTypes.STRING, allowNull: true })
+    }
+  }catch(e){
+    console.error('Could not ensure Deposits.packageId column:', e && e.message || e)
+  }
+
   app.listen(PORT, ()=> console.log('Backend running on', PORT))
 }
 

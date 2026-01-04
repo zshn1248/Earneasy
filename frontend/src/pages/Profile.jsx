@@ -7,20 +7,29 @@ export default function Profile(){
 
   useEffect(()=>{
     async function load(){
-      const token = localStorage.getItem('de_token')
-      if(!token) return
-      api.setToken(token)
-      const r = await api.me()
-      if(r.user){ setUser(r.user); setName(r.user.name || '') }
+      try{
+        const token = localStorage.getItem('de_token')
+        if(!token) return
+        api.setToken(token)
+        const r = await api.me()
+        if(r.user){ setUser(r.user); setName(r.user.name || '') }
+      }catch(e){
+        console.error('Failed to load profile', e)
+      }
     }
     load()
   },[])
 
   async function save(){
     if(!user) return
-    const r = await fetch((import.meta.env.VITE_API_URL||'http://localhost:4000') + '/api/auth/me', { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('de_token') }, body: JSON.stringify({ name }) })
-    const data = await r.json()
-    if(data.user){ setUser(data.user); localStorage.setItem('de_user', JSON.stringify(data.user)); alert('Profile updated') }
+    try{
+      const r = await fetch((import.meta.env.VITE_API_URL||'http://localhost:4000') + '/api/auth/me', { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('de_token') }, body: JSON.stringify({ name }) })
+      const data = await r.json()
+      if(data.user){ setUser(data.user); localStorage.setItem('de_user', JSON.stringify(data.user)); alert('Profile updated') }
+    }catch(e){
+      console.error('Profile save failed', e)
+      alert('Server error')
+    }
   }
 
   if(!user) return <div className="card">Please sign in to edit profile.</div>

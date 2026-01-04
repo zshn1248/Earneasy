@@ -63,6 +63,7 @@ export async function submitDeposit({accountHolder, transactionId, amount, metho
   form.append('transactionId', transactionId)
   form.append('amount', amount)
   form.append('method', method)
+  if(arguments[0].packageId) form.append('packageId', arguments[0].packageId)
   if(screenshotFile) form.append('screenshot', screenshotFile)
   const res = await fetch(BASE + '/deposits', { method:'POST', headers: { ...authHeaders() }, body: form })
   return res.json()
@@ -74,11 +75,6 @@ export async function getMyDeposits(){
 }
 
 // admin
-export async function adminGetDeposits(){
-  const res = await fetch(BASE + '/admin/deposits', { headers: { ...authHeaders() } })
-  return res.json()
-}
-
 export async function adminApproveDeposit(id){
   const res = await fetch(BASE + `/admin/deposits/${id}/approve`, { method:'POST', headers: { ...authHeaders() } })
   return res.json()
@@ -86,16 +82,6 @@ export async function adminApproveDeposit(id){
 
 export async function adminRejectDeposit(id){
   const res = await fetch(BASE + `/admin/deposits/${id}/reject`, { method:'POST', headers: { ...authHeaders() } })
-  return res.json()
-}
-
-export async function adminGetBlocked(){
-  const res = await fetch(BASE + '/admin/blocked', { headers: { ...authHeaders() } })
-  return res.json()
-}
-
-export async function adminUnblock(ip){
-  const res = await fetch(BASE + `/admin/blocked/${encodeURIComponent(ip)}/unblock`, { method:'POST', headers: { ...authHeaders() } })
   return res.json()
 }
 
@@ -145,4 +131,13 @@ export async function adminRejectWithdraw(id){
 
 export function setToken(t){ token = t; if(t) localStorage.setItem('de_token', t); else localStorage.removeItem('de_token') }
 
-export default { signup, login, me, getPackages, buyPackage, getTasks, completeTask, getBalance, getTransactions, withdraw, submitDeposit, getMyDeposits, adminGetDeposits, adminApproveDeposit, adminRejectDeposit, setToken }
+export default {
+  signup, login, me, getPackages, buyPackage, getTasks, completeTask,
+  getBalance, getTransactions, withdraw, submitDeposit, getMyDeposits,
+  // admin helpers
+  adminGetDeposits, adminApproveDeposit, adminRejectDeposit,
+  adminGetBlocked, adminUnblock, adminGetUsers, adminGetTransactions,
+  adminApproveWithdraw, adminRejectWithdraw,
+  // secrets & auth
+  setAdminSecret, setToken
+}

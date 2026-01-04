@@ -1,6 +1,6 @@
-# DailyEarn Pro — Frontend Demo
+# Earneasy — Frontend Demo
 
-This is a frontend demo for the DailyEarn Pro web app. It uses React + Vite and can connect to a simple backend (included in this repo under `backend/`). The frontend communicates with the backend when `VITE_API_URL` is set (defaults to `http://localhost:4000`).
+This is a frontend demo for the Earneasy web app. It uses React + Vite and can connect to a simple backend (included in this repo under `backend/`). The frontend communicates with the backend when `VITE_API_URL` is set (defaults to `http://localhost:4000`).
 
 Features included in this demo:
 - Landing page

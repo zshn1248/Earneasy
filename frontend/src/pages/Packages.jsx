@@ -8,10 +8,14 @@ export default function Packages(){
 
   useEffect(()=>{
     async function load(){
-      const r = await api.getPackages()
-      if(r.packages) setPackages(r.packages)
-      const token = localStorage.getItem('de_token')
-      if(token){ api.setToken(token); const me = await api.me(); if(me.user) setUser(me.user) }
+      try{
+        const r = await api.getPackages()
+        if(r.packages) setPackages(r.packages)
+        const token = localStorage.getItem('de_token')
+        if(token){ api.setToken(token); const me = await api.me(); if(me.user) setUser(me.user) }
+      }catch(e){
+        console.error('Failed to load packages', e)
+      }
     }
     load()
   },[])

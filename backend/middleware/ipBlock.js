@@ -7,6 +7,10 @@ async function ipBlock(req, res, next){
   try{
     const ip = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || ''
     if(!ip) return next()
+    // if whitelisted, allow
+    const wh = await models.WhitelistedIP.findByPk(ip)
+    if(wh) return next()
+
     const blocked = await models.BlockedIP.findByPk(ip)
     if(!blocked) return next()
 

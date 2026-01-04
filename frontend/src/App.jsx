@@ -13,12 +13,14 @@ import SecretAdmin from './pages/SecretAdmin'
 import Deposit from './pages/Deposit'
 import NotFound from './pages/NotFound'
 import Header from './components/Header'
+import ErrorBoundary from './components/ErrorBoundary'
 
 export default function App(){
   return (
     <div>
       <Header />
       <main className="container">
+        <ErrorBoundary>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
@@ -33,6 +35,7 @@ export default function App(){
           <Route path="/secret-admin/:code" element={<SecretAdmin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </ErrorBoundary>
       </main>
     </div>
   )
