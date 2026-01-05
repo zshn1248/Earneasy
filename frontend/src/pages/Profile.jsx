@@ -35,6 +35,17 @@ export default function Profile(){
     }
   }
 
+  const [oldPassword,setOldPassword] = useState('')
+  const [newPassword,setNewPassword] = useState('')
+  async function changePassword(){
+    if(!oldPassword || !newPassword) return alert('Enter both current and new password')
+    try{
+      const r = await api.changePassword({ oldPassword, newPassword })
+      if(r && r.ok){ alert('Password changed') ; setOldPassword(''); setNewPassword('') }
+      else if(r && r.error) alert(r.error)
+    }catch(e){ console.error('Change password failed', e); alert('Server error') }
+  }
+
   if(!user) return <div className="card">Please sign in to edit profile.</div>
 
   return (
@@ -72,6 +83,20 @@ export default function Profile(){
         <button className="btn ghost" onClick={()=>{ navigator.clipboard && navigator.clipboard.writeText(window.location.origin + '/auth?ref=' + (user.inviteCode || user.id)); alert('Invite link copied') }}><i className="ri-share-line"></i> Copy Invite Link</button>
         <button className="btn ghost" onClick={()=>{ /* placeholder for download */ alert('App download link copied'); navigator.clipboard && navigator.clipboard.writeText('https://example.com/app-download') }}><i className="ri-download-line"></i> App Download</button>
         <button className="btn ghost" onClick={()=>{ localStorage.removeItem('de_user'); localStorage.removeItem('de_token'); window.location.href='/' }}><i className="ri-logout-box-line"></i> Logout</button>
+      </div>
+
+      <div style={{marginTop:20}}>
+        <h3 style={{margin:0}}>Change Password</h3>
+        <p className="small muted">Change your account password.</p>
+        <div style={{marginTop:8}}>
+          <label className="small muted">Current password</label>
+          <input type="password" value={oldPassword} onChange={e=>setOldPassword(e.target.value)} style={{width:'100%',padding:8,marginTop:6}} />
+          <label className="small muted" style={{marginTop:8}}>New password</label>
+          <input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} style={{width:'100%',padding:8,marginTop:6}} />
+          <div style={{marginTop:8}}>
+            <button className="btn" onClick={changePassword}>Change password</button>
+          </div>
+        </div>
       </div>
     </div>
   )
