@@ -1,21 +1,26 @@
-// Allow runtime override by setting window.__API_BASE__ in the deployed index.html
+// Environment-aware API base selection
+// Goals:
+// - development: use http://localhost:4000/api
+// - production: use relative path /api (so nginx or same-origin proxy works)
+// - allow optional runtime override via window.__API_BASE__ for special cases
 const runtimeBase = (typeof window !== 'undefined' && window.__API_BASE__) ? window.__API_BASE__ : null
+const isDev = import.meta.env.MODE === 'development'
 
-// Derive a sensible default backend base URL in this order:
-// 1) runtime override (window.__API_BASE__)
-// 2) build-time env VITE_API_URL
-// 3) if running in a browser, assume the same host but backend on port 4000
-// 4) fallback to localhost:4000 for local development
-let configured = runtimeBase || import.meta.env.VITE_API_URL || null
-if(!configured && typeof window !== 'undefined'){
-  // build host-based URL so a frontend served from srv1247782 can call srv1247782:4000
-  const proto = window.location.protocol || 'http:'
-  const host = window.location.hostname
-  configured = `${proto}//${host}:4000`
-  console.warn('[api] no VITE_API_URL/runtime override; defaulting to', configured)
+let configured = null
+if (runtimeBase) {
+  configured = runtimeBase
+} else if (isDev) {
+  configured = 'http://localhost:4000'
+} else {
+  // production: use relative API root so requests go to same origin -> /api
+  configured = '' // empty signals use of relative path
 }
-if(!configured) configured = 'http://localhost:4000'
-const BASE = configured.endsWith('/api') ? configured : configured + '/api'
+
+const BASE = (configured && configured.endsWith('/api'))
+  ? configured
+  : (configured ? configured + '/api' : '/api')
+
+if (isDev) console.info('[api] running in development mode, API base =', BASE)
 
 let token = localStorage.getItem('de_token') || null
 let adminSecret = null
