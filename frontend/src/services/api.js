@@ -1,7 +1,20 @@
 // Allow runtime override by setting window.__API_BASE__ in the deployed index.html
 const runtimeBase = (typeof window !== 'undefined' && window.__API_BASE__) ? window.__API_BASE__ : null
-// Default to local backend on port 4000 for development (can be overridden by runtime or build-time vars)
-const configured = runtimeBase || import.meta.env.VITE_API_URL || 'http://localhost:4000'
+
+// Derive a sensible default backend base URL in this order:
+// 1) runtime override (window.__API_BASE__)
+// 2) build-time env VITE_API_URL
+// 3) if running in a browser, assume the same host but backend on port 4000
+// 4) fallback to localhost:4000 for local development
+let configured = runtimeBase || import.meta.env.VITE_API_URL || null
+if(!configured && typeof window !== 'undefined'){
+  // build host-based URL so a frontend served from srv1247782 can call srv1247782:4000
+  const proto = window.location.protocol || 'http:'
+  const host = window.location.hostname
+  configured = `${proto}//${host}:4000`
+  console.warn('[api] no VITE_API_URL/runtime override; defaulting to', configured)
+}
+if(!configured) configured = 'http://localhost:4000'
 const BASE = configured.endsWith('/api') ? configured : configured + '/api'
 
 let token = localStorage.getItem('de_token') || null
