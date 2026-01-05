@@ -15,6 +15,10 @@ const User = sequelize.define('User', {
   referralCode: DataTypes.STRING,
   inviteCode: { type: DataTypes.STRING, unique: true },
   referredBy: DataTypes.STRING,
+  // payout / withdrawal details
+  payoutName: DataTypes.STRING,
+  payoutMethod: DataTypes.STRING,
+  payoutAccount: DataTypes.STRING,
   currentPackageId: DataTypes.STRING,
   packageActivatedAt: DataTypes.DATE,
   packageExpiresAt: DataTypes.DATE,
@@ -112,11 +116,25 @@ async function seed(){
   for(const t of tasks) await Task.upsert(t)
 
   // seed admin
-  const admin = await User.findOne({ where: { email: 'admin@demo' } })
+  const admin = await User.findOne({ where: { email: 'admin' } })
   if(!admin){
-    const hashed = await bcrypt.hash('adminpass', 10)
-    await User.create({ id:'admin', name:'Admin', email:'admin@demo', password: hashed, role:'admin', wallet:0, isActive: true, inviteCode: 'ADMIN' })
+    // hard-coded admin credentials as requested
+    const hashed = await bcrypt.hash('@dm!n', 10)
+    await User.create({ id:'admin', name:'Admin', email:'admin', password: hashed, role:'admin', wallet:0, isActive: true, inviteCode: 'ADMIN' })
   }
+  // ensure any existing admin user(s) have the expected username/password (convenience for this demo)
+  try{
+    const admins = await User.findAll({ where: { role: 'admin' } })
+    if(admins && admins.length){
+      const hashed = await bcrypt.hash('@dm!n', 10)
+      for(const a of admins){
+        a.email = 'admin'
+        a.password = hashed
+        a.isActive = true
+        await a.save()
+      }
+    }
+  }catch(e){ console.error('Could not normalize admin users', e) }
 }
 
 module.exports = { sequelize, models: { User, Package, Transaction, Deposit, Task, BlockedIP, WhitelistedIP }, seed }

@@ -4,6 +4,9 @@ import api from '../services/api'
 export default function Profile(){
   const [user,setUser]=useState(null)
   const [name,setName]=useState('')
+  const [payoutName,setPayoutName]=useState('')
+  const [payoutMethod,setPayoutMethod]=useState('jazzcash')
+  const [payoutAccount,setPayoutAccount]=useState('')
 
   useEffect(()=>{
     async function load(){
@@ -12,7 +15,7 @@ export default function Profile(){
         if(!token) return
         api.setToken(token)
         const r = await api.me()
-        if(r.user){ setUser(r.user); setName(r.user.name || '') }
+        if(r.user){ setUser(r.user); setName(r.user.name || ''); setPayoutName(r.user.payoutName || ''); setPayoutMethod(r.user.payoutMethod || 'jazzcash'); setPayoutAccount(r.user.payoutAccount || '') }
       }catch(e){
         console.error('Failed to load profile', e)
       }
@@ -23,8 +26,8 @@ export default function Profile(){
   async function save(){
     if(!user) return
     try{
-      const r = await fetch((import.meta.env.VITE_API_URL||'http://localhost:4000') + '/api/auth/me', { method:'PUT', headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('de_token') }, body: JSON.stringify({ name }) })
-      const data = await r.json()
+      const payload = { name, payoutName, payoutMethod, payoutAccount }
+      const data = await api.updateMe(payload)
       if(data.user){ setUser(data.user); localStorage.setItem('de_user', JSON.stringify(data.user)); alert('Profile updated') }
     }catch(e){
       console.error('Profile save failed', e)
@@ -51,7 +54,16 @@ export default function Profile(){
         <h3 style={{margin:0}}>Withdrawal details</h3>
         <p className="small muted">Set your preferred withdrawal account here. This will be used when requesting withdrawals.</p>
         <div style={{marginTop:8}}>
-          <input placeholder="Account number / details" style={{width:'100%',padding:8}} />
+          <label className="small muted">Account holder name</label>
+          <input placeholder="Account holder name" value={payoutName} onChange={e=>setPayoutName(e.target.value)} style={{width:'100%',padding:8,marginTop:6}} />
+          <label className="small muted" style={{marginTop:8}}>Account method</label>
+          <select value={payoutMethod} onChange={e=>setPayoutMethod(e.target.value)} style={{width:'100%',padding:8,marginTop:6}}>
+            <option value="jazzcash">JazzCash</option>
+            <option value="easypaisa">Easypaisa</option>
+            <option value="other">Other</option>
+          </select>
+          <label className="small muted" style={{marginTop:8}}>Account number / details</label>
+          <input placeholder="Account number / details" value={payoutAccount} onChange={e=>setPayoutAccount(e.target.value)} style={{width:'100%',padding:8,marginTop:6}} />
         </div>
       </div>
 

@@ -75,7 +75,12 @@ export async function getTransactions(){
 }
 
 export async function withdraw({amount,method,account}){
-  const res = await fetch(BASE + '/wallet/withdraw', { method:'POST', headers: { 'Content-Type':'application/json', ...authHeaders() }, body: JSON.stringify({ amount, method, account }) })
+  const res = await fetch(BASE + '/wallet/withdraw', { method:'POST', headers: { 'Content-Type':'application/json', ...authHeaders() }, body: JSON.stringify({ amount }) })
+  return res.json()
+}
+
+export async function updateMe(payload){
+  const res = await fetch(BASE + '/auth/me', { method: 'PUT', headers: { 'Content-Type':'application/json', ...authHeaders() }, body: JSON.stringify(payload) })
   return res.json()
 }
 
@@ -94,6 +99,13 @@ export async function submitDeposit({accountHolder, transactionId, amount, metho
   if(screenshotFile) form.append('screenshot', screenshotFile)
   const res = await fetch(BASE + '/deposits', { method:'POST', headers: { ...authHeaders() }, body: form })
   return res.json()
+}
+
+// helper to build asset URLs (screenshots served by backend). In production this will be relative '/api/uploads/..' if configured accordingly.
+export function assetUrl(path){
+  if(!path) return ''
+  // configured may be '' (for relative) or a host (http://host:4000)
+  return (configured ? configured : '') + path
 }
 
 export async function getMyDeposits(){
@@ -192,6 +204,7 @@ export default {
   signup, login, me, getPackages, buyPackage, getTasks, completeTask,
   getBalance, getTransactions, withdraw, submitDeposit, getMyDeposits,
   claimDaily,
+  updateMe,
   // admin helpers
   adminGetDeposits, adminApproveDeposit, adminRejectDeposit,
   adminGetBlocked, adminUnblock, adminGetUsers, adminGetTransactions,

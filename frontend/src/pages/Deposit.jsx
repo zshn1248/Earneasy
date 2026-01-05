@@ -116,7 +116,7 @@ export default function Deposit(){
               <div key={d.id} className="card">
                 <div><strong>${d.amount}</strong> — {d.method}</div>
                 <div className="small muted">Status: {d.status}</div>
-                {d.screenshot && <div style={{marginTop:8}}><img src={(import.meta.env.VITE_API_URL||'http://localhost:4000') + d.screenshot} alt="s" style={{maxWidth:200}}/></div>}
+                {d.screenshot && <div style={{marginTop:8}}><img src={api.assetUrl(d.screenshot)} alt="s" style={{maxWidth:200}}/></div>}
               </div>
             ))}
           </div>

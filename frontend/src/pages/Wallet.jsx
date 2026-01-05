@@ -15,7 +15,7 @@ export default function Wallet(){
         if(!token) return
         api.setToken(token)
         const meRes = await api.me()
-        if(meRes.user) setUser(meRes.user)
+  if(meRes.user) setUser(meRes.user)
         const txRes = await api.getTransactions()
         if(txRes.transactions) setTxs(txRes.transactions)
         // determine if user already made a withdraw today
@@ -33,6 +33,8 @@ export default function Wallet(){
 
   async function requestWithdraw(){
     if(!user) return alert('Please sign in')
+    // require payout details
+    if(!user.payoutName || !user.payoutMethod || !user.payoutAccount) return alert('Please add your withdrawal account details in Profile before requesting a withdrawal.')
     const amount = parseFloat(withdrawAmount)
     if(!amount || amount < 200) return alert('Minimum withdrawal is Rs 200')
     if(!canWithdrawToday) return alert('Only one withdrawal is allowed per day')
@@ -41,7 +43,7 @@ export default function Wallet(){
     if(!(hour >= 12 && hour < 24)) return alert('Withdrawals are allowed between 12:00 PM and 12:00 AM only')
     try{
       api.setToken(localStorage.getItem('de_token'))
-      const r = await api.withdraw({ amount, method: 'bank', account: withdrawAccount })
+      const r = await api.withdraw({ amount })
       if(r.error) return alert(r.error)
       alert('Withdrawal requested — pending. Fee: Rs ' + (r.fee||0) + ', Net: Rs ' + (r.net||0))
       const meRes = await api.me()

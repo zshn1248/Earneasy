@@ -15,8 +15,10 @@ router.get('/transactions', authenticate, async (req,res)=>{
 
 // request withdrawal (demo: creates a transaction with status pending in real app)
 router.post('/withdraw', authenticate, async (req,res)=>{
-  const { amount, method, account } = req.body
+  const { amount } = req.body
   if(!req.user.isActive) return res.status(403).json({ error: 'Account not active. Withdrawals not allowed.' })
+  // require payout details to be configured on profile
+  if(!req.user.payoutName || !req.user.payoutMethod || !req.user.payoutAccount) return res.status(400).json({ error: 'Please add withdrawal account details in your profile before requesting a withdrawal.' })
   // minimum withdraw is 200 PKR
   if(!amount || amount < 200) return res.status(400).json({ error:'Minimum withdraw is 200' })
   if(req.user.wallet < amount) return res.status(400).json({ error:'Insufficient balance' })
@@ -40,7 +42,8 @@ router.post('/withdraw', authenticate, async (req,res)=>{
   req.user.wallet = Math.round(((req.user.wallet || 0) - amount) * 100) / 100
   await req.user.save()
   const tid = 't'+Date.now()
-  await models.Transaction.create({ id: tid, userId: req.user.id, type:'withdraw', amount, status: 'pending', meta: { account, fee, net } })
+  // store the payout details that will be used by admin to process the payment
+  await models.Transaction.create({ id: tid, userId: req.user.id, type:'withdraw', amount, status: 'pending', meta: { payoutName: req.user.payoutName, payoutMethod: req.user.payoutMethod, payoutAccount: req.user.payoutAccount, fee, net } })
   return res.json({ ok:true, wallet: req.user.wallet, fee, net })
 })
 

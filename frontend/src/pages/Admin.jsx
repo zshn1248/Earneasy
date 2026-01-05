@@ -99,8 +99,8 @@ export default function Admin(){
                     <div><strong>${d.amount}</strong> — {d.method}</div>
                     <div className="small muted">Txn: {d.transactionId} • By: {d.userId}</div>
                     {d.screenshot && <div style={{marginTop:8}}>
-                      <a href={(import.meta.env.VITE_API_URL||'http://localhost:4000') + d.screenshot} target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:8}}>
-                        <img src={(import.meta.env.VITE_API_URL||'http://localhost:4000') + d.screenshot} alt="s" style={{maxWidth:140,borderRadius:8}}/>
+                      <a href={api.assetUrl(d.screenshot)} target="_blank" rel="noreferrer" style={{display:'inline-flex',alignItems:'center',gap:8}}>
+                        <img src={api.assetUrl(d.screenshot)} alt="s" style={{maxWidth:140,borderRadius:8}}/>
                         <span className="small muted"><i className="ri-eye-line"></i> Open screenshot</span>
                       </a>
                     </div>}

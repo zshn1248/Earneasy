@@ -63,14 +63,18 @@ router.post('/login', async (req,res)=>{
 const { authenticate } = require('../middleware/auth')
 router.get('/me', authenticate, async (req,res)=>{
   const u = req.user
-  return res.json({ user: { id: u.id, name:u.name, email:u.email, role:u.role, wallet:u.wallet, isActive: u.isActive, inviteCode: u.inviteCode, referredBy: u.referredBy, currentPackageId: u.currentPackageId, packageExpiresAt: u.packageExpiresAt } })
+  return res.json({ user: { id: u.id, name:u.name, email:u.email, role:u.role, wallet:u.wallet, isActive: u.isActive, inviteCode: u.inviteCode, referredBy: u.referredBy, currentPackageId: u.currentPackageId, packageExpiresAt: u.packageExpiresAt, payoutName: u.payoutName, payoutMethod: u.payoutMethod, payoutAccount: u.payoutAccount } })
 })
 
 // update profile (name only for demo)
 router.put('/me', authenticate, async (req,res)=>{
-  const { name } = req.body
-  if(name){ req.user.name = name; await req.user.save() }
-  return res.json({ user: { id: req.user.id, name: req.user.name, email: req.user.email, wallet: req.user.wallet, isActive: req.user.isActive, inviteCode: req.user.inviteCode } })
+  const { name, payoutName, payoutMethod, payoutAccount } = req.body || {}
+  if(name){ req.user.name = name }
+  if(payoutName !== undefined) req.user.payoutName = payoutName
+  if(payoutMethod !== undefined) req.user.payoutMethod = payoutMethod
+  if(payoutAccount !== undefined) req.user.payoutAccount = payoutAccount
+  await req.user.save()
+  return res.json({ user: { id: req.user.id, name: req.user.name, email: req.user.email, wallet: req.user.wallet, isActive: req.user.isActive, inviteCode: req.user.inviteCode, payoutName: req.user.payoutName, payoutMethod: req.user.payoutMethod, payoutAccount: req.user.payoutAccount } })
 })
 
 module.exports = router

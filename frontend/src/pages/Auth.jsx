@@ -12,7 +12,9 @@ function SignUp({onSigned}){
   async function submit(e){
     e.preventDefault()
     try{
-      const r = await api.signup({ name, email, phone, password })
+      // include referral code from URL if present
+      const urlRef = new URLSearchParams(window.location.search).get('ref')
+      const r = await api.signup({ name, email, phone, password, referral: urlRef })
       if(r.error) return setErr(r.error)
       // save token and user
       localStorage.setItem('de_user', JSON.stringify(r.user))

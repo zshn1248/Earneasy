@@ -8,7 +8,8 @@ const { authenticate, requireAdmin } = require('../middleware/auth')
 function allowAdminOrSecret(handler){
   return async (req,res)=>{
     try{
-      const secret = process.env.ADMIN_SECRET || 'admintestsecret'
+  // default admin secret (can be overridden with ADMIN_SECRET env var)
+  const secret = process.env.ADMIN_SECRET || 'earnandearn'
       const headerSecret = req.headers['x-admin-secret'] || req.query.admin_secret
       if(headerSecret && headerSecret === secret){
         // bypass normal auth
