@@ -13,19 +13,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      // runtime API base helper: if not overridden, point to same host on port 4000
-      if(!window.__API_BASE__){
-        try{
-          var proto = window.location.protocol || 'http:'
-          var host = window.location.hostname || 'localhost'
-          window.__API_BASE__ = proto + '//' + host + ':4000'
-          console.info('[runtime] window.__API_BASE__ set to', window.__API_BASE__)
-        }catch(e){
-          console.warn('[runtime] could not set window.__API_BASE__', e)
-        }
-      }
-    </script>
+    <!-- runtime override removed to avoid forcing API host:port in production; api client will use relative /api in production -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
