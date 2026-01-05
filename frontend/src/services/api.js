@@ -1,7 +1,7 @@
 // Allow runtime override by setting window.__API_BASE__ in the deployed index.html
 const runtimeBase = (typeof window !== 'undefined' && window.__API_BASE__) ? window.__API_BASE__ : null
-// Default to the provided VPS API if no runtime or build-time var is set
-const configured = runtimeBase || import.meta.env.VITE_API_URL || 'http://srv1247782.hstgr.cloud:3000'
+// Default to local backend on port 4000 for development (can be overridden by runtime or build-time vars)
+const configured = runtimeBase || import.meta.env.VITE_API_URL || 'http://localhost:4000'
 const BASE = configured.endsWith('/api') ? configured : configured + '/api'
 
 let token = localStorage.getItem('de_token') || null
